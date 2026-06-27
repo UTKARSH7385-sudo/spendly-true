@@ -528,3 +528,195 @@ a { color: inherit; text-decoration: none; }
     .nav-links a:not(.nav-cta) { display: none; }
     .hero { padding: 3rem 1rem 2rem; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Hero — stacked (matches new design)                                 */
+/* ------------------------------------------------------------------ */
+
+.hero-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 5rem 2rem 4rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+/* Pill badge — green dot + sentence case, NOT uppercase */
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.75rem;
+}
+
+.hero-pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+
+/* Title — center-aligned, two lines, second line in green italic */
+.hero-title-2line {
+    text-align: center;
+    max-width: 760px;
+    margin-bottom: 1.25rem;
+}
+
+.hero-title-2line em {
+    color: var(--accent);
+    font-style: italic;
+}
+
+.hero-stack .hero-subtitle {
+    text-align: center;
+    max-width: 520px;
+    margin-bottom: 2.25rem;
+}
+
+.hero-stack .hero-actions {
+    justify-content: center;
+    margin-bottom: 3.5rem;
+}
+
+/* Pill-shaped buttons (screenshot buttons are pill-rounded) */
+.btn-pill {
+    border-radius: 999px;
+    padding: 0.85rem 1.75rem;
+    font-size: 0.95rem;
+}
+
+/* Make the second button look like the screenshot — dark outline, no fill */
+.hero-stack .btn-ghost.btn-pill {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+}
+
+.hero-stack .btn-ghost.btn-pill:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper);
+}
+
+/* Dashboard mock card */
+.dashboard-mock {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.75rem 2rem;
+    width: 100%;
+    max-width: 760px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    text-align: left;
+}
+
+.dashboard-dots {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: block;
+}
+
+.dashboard-dot-red    { background: #f4a8a0; }
+.dashboard-dot-amber  { background: #f6c87a; }
+.dashboard-dot-green  { background: #a8d4ba; }
+
+/* KPI tiles row */
+.dashboard-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-tile {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.25rem;
+}
+
+.kpi-label {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.35rem;
+}
+
+.kpi-value {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+    line-height: 1.1;
+}
+
+.kpi-delta {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.kpi-delta-down    { color: var(--danger); }
+.kpi-delta-up      { color: var(--accent); }
+.kpi-delta-neutral { color: var(--ink-muted); }
+
+/* Bars card */
+.dashboard-bars {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.bar-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bar-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+}
+
+.bar-track {
+    height: 8px;
+    background: var(--border-soft);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.bar-food   { background: #d99043; }   /* warm orange */
+.bar-travel { background: #5b7fa6; }   /* muted blue */
+.bar-bills  { background: #8b5e83; }   /* muted purple */
+
+/* Stack dashboard tiles on small screens */
+@media (max-width: 640px) {
+    .dashboard-kpis { grid-template-columns: 1fr; }
+    .hero-stack { padding: 3rem 1.25rem 2.5rem; }
+}
