@@ -1,8 +1,21 @@
+import re
 import sqlite3
 from pathlib import Path
 
 from flask import current_app, g
 from werkzeug.security import generate_password_hash
+
+
+# ------------------------------------------------------------------ #
+# Exceptions                                                          #
+# ------------------------------------------------------------------ #
+
+class DuplicateEmailError(Exception):
+    """Raised when an INSERT into users violates the email UNIQUE constraint."""
+
+
+# Module-level regex — caller may import this from db.py or re-define locally.
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
 # ------------------------------------------------------------------ #
@@ -67,6 +80,46 @@ def init_db() -> None:
 # ------------------------------------------------------------------ #
 # Demo data                                                           #
 # ------------------------------------------------------------------ #
+
+def create_user(name: str, email: str, password: str) -> int:
+    """Insert a new user. Returns the new user's id.
+
+    `name` and `email` must already be normalized by the caller (stripped;
+    email lowercased). `password` is the plaintext — it is hashed before
+    storage and never written to disk in cleartext.
+
+    The `users.email` UNIQUE constraint is the authoritative guard against
+    duplicates; a sqlite3.IntegrityError is translated into DuplicateEmailError
+    so callers don't have to know about SQLite specifics (and so two
+    near-simultaneous registrations with the same email don't 500).
+    """
+    db = get_db()
+    password_hash = generate_password_hash(password)
+    try:
+        cur = db.execute(
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            (name, email, password_hash),
+        )
+        db.commit()
+    except sqlite3.IntegrityError as exc:
+        db.rollback()
+        raise DuplicateEmailError(email) from exc
+    return cur.lastrowid
+
+
+def find_user_by_email(email: str) -> sqlite3.Row | None:
+    """Return the user row matching `email`, or None.
+
+    Used as a friendly fast-path duplicate check in the registration flow.
+    Not a substitute for the UNIQUE constraint in `create_user()`.
+    `email` must already be normalized (lowercased, stripped).
+    """
+    db = get_db()
+    return db.execute(
+        "SELECT id, name, email, password_hash FROM users WHERE email = ? LIMIT 1",
+        (email,),
+    ).fetchone()
+
 
 def seed_db() -> None:
     """Insert demo user + 8 sample expenses. No-op if users already has rows."""
