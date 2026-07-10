@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 
 from flask import current_app, g
-from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 # ------------------------------------------------------------------ #
@@ -119,6 +119,22 @@ def find_user_by_email(email: str) -> sqlite3.Row | None:
         "SELECT id, name, email, password_hash FROM users WHERE email = ? LIMIT 1",
         (email,),
     ).fetchone()
+
+
+def verify_password(email: str, password: str) -> sqlite3.Row | None:
+    """Return the user row if email+password match, else None.
+
+    `email` must already be normalised (lowercased, stripped).
+    Returns None for both unknown email and wrong password so
+    callers render a single generic error and don't leak which
+    credential was wrong.
+    """
+    row = find_user_by_email(email)
+    if row is None:
+        return None
+    if not check_password_hash(row["password_hash"], password):
+        return None
+    return row
 
 
 def seed_db() -> None:

@@ -18,6 +18,7 @@ from database.db import (
     init_app as init_db_app,
     init_db,
     seed_db,
+    verify_password,
 )
 
 app = Flask(__name__)
@@ -82,9 +83,36 @@ def register():
     return redirect(url_for("profile"))
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    # Logged-in visitors skip the form entirely.
+    if session.get("user_id") is not None:
+        return redirect(url_for("profile"))
+
+    if request.method == "GET":
+        return render_template("login.html")
+
+    # POST — verify credentials. Normalise email exactly like /register.
+    email = (request.form.get("email") or "").strip().lower()
+    password = request.form.get("password") or ""
+
+    if not email or not password:
+        return render_template(
+            "login.html",
+            error="Please enter both your email and password.",
+        )
+
+    user = verify_password(email, password)
+    if user is None:
+        # Same error for unknown email and wrong password — don't leak
+        # which one was wrong.
+        return render_template(
+            "login.html",
+            error="Invalid email or password.",
+        )
+
+    session["user_id"] = user["id"]
+    return redirect(url_for("profile"))
 
 
 # ------------------------------------------------------------------ #
@@ -93,7 +121,8 @@ def login():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    return redirect(url_for("landing"))
 
 
 @app.route("/profile")
