@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Your profile — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="profile-section">
+    <div class="profile-container">
+
+        <header class="profile-header">
+            <h1 class="profile-title">Hi, {{ user["name"] }}.</h1>
+            <p class="profile-subtitle">Here's a snapshot of your spending this month.</p>
+        </header>
+
+        <div class="profile-card">
+            <div class="profile-card-row">
+                <span class="profile-card-label">Email</span>
+                <span class="profile-card-value">{{ user["email"] }}</span>
+            </div>
+            <div class="profile-card-row">
+                <span class="profile-card-label">Member since</span>
+                <span class="profile-card-value">{{ user["created_at"][:10] }}</span>
+            </div>
+        </div>
+
+        <div class="profile-kpis">
+            <div class="kpi-tile">
+                <div class="kpi-label">Total spent</div>
+                <div class="kpi-value">₹{{ "%.2f"|format(summary["total"]) }}</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-label">Transactions</div>
+                <div class="kpi-value">{{ summary["count"] }}</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-label">Top category</div>
+                <div class="kpi-value">
+                    {{ summary["top_category"] if summary["top_category"] else "—" }}
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a href="{{ url_for('add_expense') }}" class="btn-primary">Add expense</a>
+            <a href="{{ url_for('logout') }}" class="btn-ghost btn-pill">Sign out</a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}
