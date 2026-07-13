@@ -15,6 +15,8 @@ from database.db import (
     DuplicateEmailError,
     create_user,
     find_user_by_email,
+    find_user_by_id,
+    get_expense_summary,
     init_app as init_db_app,
     init_db,
     seed_db,
@@ -127,7 +129,23 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    # 1. Not signed in → bounce to /login. Check this first so an
+    #    unauthenticated visitor never hits the DB for an expense summary.
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    # 2. Defensive: the session could reference a user that no longer exists
+    #    (e.g. the row was deleted out from under the session). Clear the
+    #    session and redirect — never 500.
+    user = find_user_by_id(session["user_id"])
+    if user is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    # 3. Expense summary for the current month.
+    summary = get_expense_summary(user["id"])
+
+    return render_template("profile.html", user=user, summary=summary)
 
 
 @app.route("/expenses/add")
