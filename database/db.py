@@ -198,6 +198,28 @@ def get_expense_summary(user_id: int) -> dict:
     }
 
 
+def list_expenses_for_user(user_id: int, limit: int = 50) -> list[sqlite3.Row]:
+    """Return the user's expenses, newest first, capped at `limit` rows.
+
+    Scoped strictly to `user_id` — never returns rows belonging to other
+    users. Returns an empty list (not None) when the user has no rows,
+    so the template can iterate without a guard.
+
+    Sort order is `date DESC, id DESC`: newest date first, with `id DESC`
+    as a stable tie-break when two expenses share a date. Pagination is
+    out of scope at this step; the `limit` keyword exists as a thin
+    defence against runaway result sets for heavy users.
+    """
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, amount, category, date, description "
+        "FROM expenses WHERE user_id = ? "
+        "ORDER BY date DESC, id DESC LIMIT ?",
+        (user_id, limit),
+    ).fetchall()
+    return list(rows)
+
+
 def seed_db() -> None:
     """Insert demo user + 8 sample expenses. No-op if users already has rows."""
     db = get_db()

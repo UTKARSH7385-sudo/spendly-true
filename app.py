@@ -19,6 +19,7 @@ from database.db import (
     get_expense_summary,
     init_app as init_db_app,
     init_db,
+    list_expenses_for_user,
     seed_db,
     verify_password,
 )
@@ -120,6 +121,24 @@ def login():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
+
+@app.route("/expenses")
+def expenses():
+    """Logged-in-only list of the current user's expenses, newest first.
+
+    The page is read-only at this step — Steps 7–9 will add create /
+    edit / delete POST handlers. If the visitor is not signed in, redirect
+    to /login without touching the expenses table.
+    """
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    rows = list_expenses_for_user(user_id)
+    summary = get_expense_summary(user_id)
+
+    return render_template("expenses.html", expenses=rows, summary=summary)
+
 
 @app.route("/logout")
 def logout():
