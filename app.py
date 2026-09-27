@@ -10,6 +10,7 @@ from flask import (
     session,
     url_for,
 )
+from datetime import date
 
 from database.db import (
     DuplicateEmailError,
@@ -161,10 +162,31 @@ def profile():
         session.clear()
         return redirect(url_for("login"))
 
-    # 3. Expense summary for the current month.
-    summary = get_expense_summary(user["id"])
+    # 3. Date filtering for expense summary.
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
 
-    return render_template("profile.html", user=user, summary=summary)
+    if start_date:
+        try:
+            date.fromisoformat(start_date)
+        except ValueError:
+            start_date = None
+
+    if end_date:
+        try:
+            date.fromisoformat(end_date)
+        except ValueError:
+            end_date = None
+
+    summary = get_expense_summary(user["id"], start_date, end_date)
+
+    return render_template(
+        "profile.html",
+        user=user,
+        summary=summary,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
 
 @app.route("/expenses/add")

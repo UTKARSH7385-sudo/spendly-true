@@ -158,37 +158,37 @@ def find_user_by_id(user_id: int) -> sqlite3.Row | None:
     ).fetchone()
 
 
-def get_expense_summary(user_id: int) -> dict:
-    """Return {total, count, top_category} for the current month for `user_id`.
+def get_expense_summary(user_id: int, start_date: str | None = None, end_date: str | None = None) -> dict:
+    """Return {total, count, top_category} for the specified period for `user_id`.
 
+    If start_date and end_date are not provided, defaults to the current month.
     All three keys are always present. `total=0.0`, `count=0`, and
     `top_category=None` are returned when the user has no expenses in the
     period, so the template can render `₹0.00` / `0` / `—` without
     conditionals on the data shape.
-
-    The "current month" boundary is computed in Python (not SQL) so the
-    date logic is portable and easy to test. `expenses.date` is stored as
-    an ISO `YYYY-MM-DD` string, so `date >= first_of_month` is a correct
-    lexicographic comparison.
     """
     import datetime
 
     db = get_db()
-    first_of_month = datetime.date.today().replace(day=1).isoformat()
+
+    if start_date is None:
+        start_date = datetime.date.today().replace(day=1).isoformat()
+    if end_date is None:
+        end_date = datetime.date.today().isoformat()
 
     row = db.execute(
         "SELECT COALESCE(SUM(amount), 0.0) AS total, "
         "COUNT(*) AS count "
-        "FROM expenses WHERE user_id = ? AND date >= ?",
-        (user_id, first_of_month),
+        "FROM expenses WHERE user_id = ? AND date BETWEEN ? AND ?",
+        (user_id, start_date, end_date),
     ).fetchone()
 
     top = db.execute(
         "SELECT category FROM expenses "
-        "WHERE user_id = ? AND date >= ? "
+        "WHERE user_id = ? AND date BETWEEN ? AND ? "
         "GROUP BY category "
         "ORDER BY SUM(amount) DESC, category ASC LIMIT 1",
-        (user_id, first_of_month),
+        (user_id, start_date, end_date),
     ).fetchone()
 
     return {
