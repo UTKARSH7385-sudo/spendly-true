@@ -9,8 +9,35 @@
 
         <header class="profile-header">
             <h1 class="profile-title">Hi, {{ user["name"] }}.</h1>
-            <p class="profile-subtitle">Here's a snapshot of your spending this month.</p>
+            <p class="profile-subtitle">
+                {% if start_date and end_date %}
+                    Spending from {{ start_date }} to {{ end_date }}.
+                {% else %}
+                    Here's a snapshot of your spending this month.
+                {% endif %}
+            </p>
         </header>
+
+        <div class="profile-filter">
+            <form method="GET" action="{{ url_for('profile') }}" class="filter-form">
+                <div class="filter-group">
+                    <label for="start_date">From</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}">
+                </div>
+                <div class="filter-group">
+                    <label for="end_date">To</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}">
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">Filter</button>
+                    <a href="{{ url_for('profile') }}" class="btn-ghost">Reset</a>
+                </div>
+            </form>
+        </div>
+
+
+
+
 
         <div class="profile-card">
             <div class="profile-card-row">
