@@ -11,6 +11,16 @@ from flask import (
     url_for,
 )
 from datetime import date
+from database.db import (
+    DuplicateEmailError,
+    create_user,
+    find_user_by_email,
+    find_user_by_id,
+    get_expense_summary,
+    init_app as init_db_app,
+    add_expense as db_add_expense,
+    validate_expense_input,
+)
 
 from database.db import (
     DuplicateEmailError,
@@ -189,9 +199,37 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    """Route to add a new expense. Requires authentication."""
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        amount_str = request.form.get("amount")
+        category = request.form.get("category", "").strip()
+        date_str = request.form.get("date")
+        description = request.form.get("description", "").strip() or None
+
+        # Validation using helper to keep route thin
+        is_valid, error_msg = validate_expense_input(amount_str, category, date_str)
+        if not is_valid:
+            return render_template("add_expense.html", error=error_msg)
+
+        # Persistence
+        db_add_expense(
+            user_id,
+            float(amount_str),
+            category,
+            date_str,
+            description
+        )
+
+        return redirect(url_for("profile"))
+
+    return render_template("add_expense.html")
+
 
 
 @app.route("/expenses/<int:id>/edit")

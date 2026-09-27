@@ -260,9 +260,48 @@ def seed_db() -> None:
     db.commit()
 
 
-# ------------------------------------------------------------------ #
-# App registration                                                    #
-# ------------------------------------------------------------------ #
+def validate_expense_input(amount_str: str | None, category: str | None, date_str: str | None) -> tuple[bool, str | None]:
+    """
+    Validate expense input data.
+    Returns (is_valid, error_message).
+    """
+    import datetime
+
+    if not amount_str:
+        return False, "Amount is required."
+    try:
+        amount = float(amount_str)
+        if amount <= 0:
+            return False, "Amount must be a positive number."
+    except ValueError:
+        return False, "Invalid amount."
+
+    if not category or not category.strip():
+        return False, "Category is required."
+
+    if not date_str:
+        return False, "Date is required."
+    try:
+        datetime.date.fromisoformat(date_str)
+    except ValueError:
+        return False, "Invalid date format."
+
+    return True, None
+
+
+def add_expense(user_id: int, amount: float, category: str, date: str, description: str | None = None) -> int:
+
+    """Insert a new expense for the given user. Returns the new expense's id."""
+    db = get_db()
+    cur = db.execute(
+        "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+        (user_id, amount, category, date, description),
+    )
+    db.commit()
+    return cur.lastrowid
+
+
+# ------------------------------------------------------------------ ## ------------------------------------------------------------------ #
 
 def init_app(app) -> None:
     """Register teardown, ensure instance/ exists, set DATABASE config."""
